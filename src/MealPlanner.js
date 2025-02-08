@@ -258,6 +258,63 @@ const MealPlanner = () => {
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
       <h1 style={{ textAlign: 'center', marginBottom: '20px' }}>Keto-Cycling Meal Plan</h1>
       
+      {/* Date Navigation */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        gap: '15px',
+        marginBottom: '20px',
+        padding: '10px',
+        backgroundColor: '#f5f5f5',
+        borderRadius: '8px'
+      }}>
+        <button 
+          onClick={() => {
+            const newDate = new Date(currentDate);
+            newDate.setDate(currentDate.getDate() - 1);
+            setCurrentDate(newDate);
+          }}
+          style={{
+            padding: '8px 16px',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            backgroundColor: 'white',
+            cursor: 'pointer'
+          }}
+        >
+          Previous
+        </button>
+        <div style={{ 
+          fontWeight: 'bold',
+          padding: '8px 16px',
+          minWidth: '150px',
+          textAlign: 'center'
+        }}>
+          {currentDate.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+          })}
+        </div>
+        <button 
+          onClick={() => {
+            const newDate = new Date(currentDate);
+            newDate.setDate(currentDate.getDate() + 1);
+            setCurrentDate(newDate);
+          }}
+          style={{
+            padding: '8px 16px',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            backgroundColor: 'white',
+            cursor: 'pointer'
+          }}
+        >
+          Next
+        </button>
+      </div>
+
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
         {days.map(day => (
           <button
