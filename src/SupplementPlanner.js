@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 
 // Supplement Planner JS File
 
@@ -55,4 +56,55 @@ const supplementPlan = [
     }
 ];
 
-module.exports = supplementPlan;
+const SupplementPlanner = () => {
+    const [completedSupplements, setCompletedSupplements] = useState({});
+
+    const toggleSupplementCompletion = (timeIndex, supplementIndex) => {
+        const key = `${timeIndex}-${supplementIndex}`;
+        setCompletedSupplements(prev => ({
+            ...prev,
+            [key]: !prev[key]
+        }));
+    };
+
+    return (
+        <div className="supplement-planner">
+            {supplementPlan.map((timeSlot, timeIndex) => (
+                <div key={timeIndex} className="supplement-time-slot">
+                    <div className="time-slot-header">{timeSlot.time}</div>
+                    <div className="supplements">
+                        {timeSlot.supplements.map((supplement, supplementIndex) => {
+                            const key = `${timeIndex}-${supplementIndex}`;
+                            const isCompleted = completedSupplements[key];
+                            
+                            return (
+                                <div 
+                                    key={supplementIndex} 
+                                    className={`supplement-item ${isCompleted ? 'completed' : ''}`}
+                                    onClick={() => toggleSupplementCompletion(timeIndex, supplementIndex)}
+                                >
+                                    <div className="supplement-header">
+                                        <div className="supplement-name">{supplement.name}</div>
+                                        <div className="supplement-checkbox">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={isCompleted} 
+                                                onChange={() => {}} // Handled by onClick on parent div
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="supplement-details">
+                                        <div className="supplement-dose">{supplement.dose}</div>
+                                        <div className="supplement-notes">{supplement.notes}</div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+export default SupplementPlanner;
