@@ -20,7 +20,7 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
+  "theme_color": "#2563eb",
   "background_color": "#ffffff",
   "orientation": "portrait",
   "description": "Track your keto meals and monitor your macros with this easy-to-use PWA",

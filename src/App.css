@@ -580,39 +580,184 @@ h1 {
   position: relative;
 }
 
-/* Media Queries */
+/* Mobile Optimizations */
 @media (max-width: 640px) {
-  .meal-planner {
-    padding: 0 12px;
-  }
-  
+  /* Header and Navigation */
   .header {
     padding: 16px;
-  }
-  
-  h1 {
-    font-size: 28px;
     margin-bottom: 20px;
   }
-  
+
+  h1 {
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+
   .date-navigation {
-    padding: 12px 16px;
+    padding: 12px;
+    gap: 8px;
   }
-  
+
   .date-navigation button {
-    padding: 8px 12px;
+    min-width: 70px;
     font-size: 14px;
-    min-width: 60px;
+    padding: 10px;
   }
-  
+
   .date-navigation h2 {
     font-size: 16px;
+    padding: 0 4px;
+  }
+
+  /* Container padding */
+  .meal-planner {
     padding: 0 8px;
   }
-  
+
+  .meal-header {
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 20px;
+  }
+
+  .meal-header h3 {
+    font-size: 20px;
+    width: 100%;
+  }
+
+  .meal-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-start;
+  }
+
+  .portion-toggle {
+    order: 1;
+    width: auto;
+    padding: 8px;
+    background: #f8fafc;
+    border-radius: 8px;
+    margin-right: auto;
+  }
+
+  .swap-button {
+    order: 2;
+    padding: 8px 12px;
+  }
+
+  .meal-checkbox {
+    order: 3;
+    width: 24px;
+    height: 24px;
+    margin-left: 0;
+  }
+
+  .remove-button {
+    order: 4;
+    width: 100%;
+    justify-content: center;
+    margin-top: 8px;
+  }
+
+  .meal-table {
+    font-size: 14px;
+  }
+
+  .meal-table th,
+  .meal-table td {
+    padding: 8px;
+  }
+
+  /* Improve table layout on mobile */
+  .meal-table th:first-child,
+  .meal-table td:first-child {
+    width: 40%;
+  }
+
+  .meal-table th:nth-child(2),
+  .meal-table td:nth-child(2) {
+    width: 40%;
+  }
+
+  .meal-table th:last-child,
+  .meal-table td:last-child {
+    width: 20%;
+  }
+
+  /* Make toggle switch more touch-friendly */
+  .toggle-switch {
+    width: 52px;
+    height: 28px;
+  }
+
+  .toggle-switch::after {
+    width: 24px;
+    height: 24px;
+  }
+
+  .portion-toggle[data-active="true"] .toggle-switch::after {
+    transform: translateX(24px);
+  }
+
+  .toggle-label {
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  /* Improve daily overview layout */
+  .daily-overview {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .meal-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .stat-item {
+    padding: 8px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+  }
+
+  .stat-value {
+    font-size: 16px;
+  }
+
+  /* Improve goal tags layout */
+  .meal-goals {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .goal-tag {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+
+  /* Dashboard improvements */
   .dashboard {
-    padding: 1rem;
-    margin: 1rem 0;
+    padding: 12px;
+    margin: 12px 0;
+  }
+
+  .stats-section h3 {
+    font-size: 16px;
+  }
+
+  .progress-label {
+    font-size: 12px;
+  }
+
+  /* Add spacing between meals */
+  .meal-item {
+    margin-bottom: 12px;
+    padding: 16px;
   }
 }
 
