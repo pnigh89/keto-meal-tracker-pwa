@@ -7,14 +7,152 @@ const MealPlanner = () => {
     return weekday;
   });
   
-  const [completedMeals, setCompletedMeals] = useState(() => {
-    const saved = localStorage.getItem('completedMeals');
+  const [mealData, setMealData] = useState(() => {
+    const saved = localStorage.getItem('mealData');
+    return saved ? JSON.parse(saved) : {};
+  });
+  
+  const [mealComments, setMealComments] = useState(() => {
+    const saved = localStorage.getItem('mealComments');
     return saved ? JSON.parse(saved) : {};
   });
 
+  const [commentModal, setCommentModal] = useState({
+    isOpen: false,
+    mealKey: null,
+    comment: ''
+  });
+
   useEffect(() => {
-    localStorage.setItem('completedMeals', JSON.stringify(completedMeals));
-  }, [completedMeals]);
+    localStorage.setItem('mealData', JSON.stringify(mealData));
+  }, [mealData]);
+
+  useEffect(() => {
+    localStorage.setItem('mealComments', JSON.stringify(mealComments));
+  }, [mealComments]);
+
+  const getDateKey = (date) => date.toISOString().split('T')[0];
+
+  const toggleMealCompletion = (mealTime) => {
+    const dateKey = getDateKey(currentDate);
+    const mealKey = `${dateKey}-${mealTime}`;
+    setMealData(prev => ({
+      ...prev,
+      [mealKey]: {
+        ...prev[mealKey],
+        completed: !prev[mealKey]?.completed
+      }
+    }));
+  };
+
+  const handleCommentOpen = (mealTime) => {
+    const dateKey = getDateKey(currentDate);
+    const mealKey = `${dateKey}-${mealTime}`;
+    setCommentModal({
+      isOpen: true,
+      mealKey,
+      comment: mealComments[mealKey] || ''
+    });
+  };
+
+  const handleCommentSave = () => {
+    if (commentModal.mealKey) {
+      setMealComments(prev => ({
+        ...prev,
+        [commentModal.mealKey]: commentModal.comment
+      }));
+      setCommentModal({ isOpen: false, mealKey: null, comment: '' });
+    }
+  };
+
+  const calculateStats = () => {
+    const today = getDateKey(currentDate);
+    const startOfWeek = new Date(currentDate);
+    startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
+    
+    const weekStats = {
+      total: 0,
+      completed: 0
+    };
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startOfWeek);
+      date.setDate(startOfWeek.getDate() + i);
+      const dateKey = getDateKey(date);
+      
+      const dayMeals = Object.keys(mealData).filter(key => key.startsWith(dateKey));
+      weekStats.total += dayMeals.length;
+      weekStats.completed += dayMeals.filter(key => mealData[key]?.completed).length;
+    }
+
+    return {
+      weeklyPercentage: (weekStats.completed / weekStats.total) * 100 || 0,
+      todayPercentage: calculateDayPercentage(today)
+    };
+  };
+
+  const calculateDayPercentage = (dateKey) => {
+    const dayMeals = Object.keys(mealData).filter(key => key.startsWith(dateKey));
+    const completed = dayMeals.filter(key => mealData[key]?.completed).length;
+    return (completed / dayMeals.length) * 100 || 0;
+  };
+
+  const Dashboard = () => {
+    const stats = calculateStats();
+    return (
+      <div className="dashboard">
+        <h2>Progress Dashboard</h2>
+        <div className="stats">
+          <div className="stat-item">
+            <h3>Today's Progress</h3>
+            <div className="progress-bar">
+              <div 
+                className="progress" 
+                style={{ width: `${stats.todayPercentage}%` }}
+              />
+            </div>
+            <span>{Math.round(stats.todayPercentage)}% Complete</span>
+          </div>
+          <div className="stat-item">
+            <h3>Weekly Progress</h3>
+            <div className="progress-bar">
+              <div 
+                className="progress" 
+                style={{ width: `${stats.weeklyPercentage}%` }}
+              />
+            </div>
+            <span>{Math.round(stats.weeklyPercentage)}% Complete</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const CommentModal = () => {
+    if (!commentModal.isOpen) return null;
+    
+    return (
+      <div className="modal">
+        <div className="modal-content">
+          <h3>Add Comment</h3>
+          <textarea
+            value={commentModal.comment}
+            onChange={(e) => setCommentModal(prev => ({
+              ...prev,
+              comment: e.target.value
+            }))}
+            placeholder="Enter your comment..."
+          />
+          <div className="modal-buttons">
+            <button onClick={handleCommentSave}>Save</button>
+            <button onClick={() => setCommentModal({ isOpen: false, mealKey: null, comment: '' })}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const mealPlanData = {
     monday: {
@@ -239,169 +377,74 @@ const MealPlanner = () => {
     }
   };
 
-  const toggleMealCompletion = (mealTime) => {
-    const mealKey = `${currentDate.toISOString().split('T')[0]}-${mealTime}`;
-    setCompletedMeals(prev => ({
-      ...prev,
-      [mealKey]: !prev[mealKey]
-    }));
-  };
-
   const isMealCompleted = (mealTime) => {
     const mealKey = `${currentDate.toISOString().split('T')[0]}-${mealTime}`;
-    return completedMeals[mealKey] || false;
+    return mealData[mealKey]?.completed || false;
   };
 
   const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
-      <h1 style={{ textAlign: 'center', marginBottom: '20px' }}>Keto-Cycling Meal Plan</h1>
+    <div className="meal-planner">
+      <Dashboard />
       
-      {/* Date Navigation */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        gap: '15px',
-        marginBottom: '20px',
-        padding: '10px',
-        backgroundColor: '#f5f5f5',
-        borderRadius: '8px'
-      }}>
-        <button 
-          onClick={() => {
-            const newDate = new Date(currentDate);
-            newDate.setDate(currentDate.getDate() - 1);
-            setCurrentDate(newDate);
-          }}
-          style={{
-            padding: '8px 16px',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-            backgroundColor: 'white',
-            cursor: 'pointer'
-          }}
-        >
-          Previous
-        </button>
-        <div style={{ 
-          fontWeight: 'bold',
-          padding: '8px 16px',
-          minWidth: '150px',
-          textAlign: 'center'
-        }}>
-          {currentDate.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
-          })}
-        </div>
-        <button 
-          onClick={() => {
-            const newDate = new Date(currentDate);
-            newDate.setDate(currentDate.getDate() + 1);
-            setCurrentDate(newDate);
-          }}
-          style={{
-            padding: '8px 16px',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-            backgroundColor: 'white',
-            cursor: 'pointer'
-          }}
-        >
-          Next
-        </button>
+      <div className="date-navigation">
+        <button onClick={() => setCurrentDate(prev => {
+          const newDate = new Date(prev);
+          newDate.setDate(prev.getDate() - 1);
+          return newDate;
+        })}>Previous Day</button>
+        
+        <h2>{currentDate.toLocaleDateString('en-US', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        })}</h2>
+        
+        <button onClick={() => setCurrentDate(prev => {
+          const newDate = new Date(prev);
+          newDate.setDate(prev.getDate() + 1);
+          return newDate;
+        })}>Next Day</button>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-        {days.map(day => (
-          <button
-            key={day}
-            onClick={() => setSelectedDay(day)}
-            style={{
-              padding: '10px',
-              backgroundColor: selectedDay === day ? '#e0e0e0' : 'white',
-              border: '1px solid #ccc',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            {day.charAt(0).toUpperCase() + day.slice(1, 3)}
-          </button>
+      <div className="meal-plan">
+        {mealPlanData[selectedDay]?.meals.map((meal, index) => (
+          <div key={index} className="meal-item">
+            <div className="meal-header">
+              <h3>{meal.time}</h3>
+              <div className="meal-actions">
+                <button 
+                  onClick={() => handleCommentOpen(meal.time)}
+                  className="comment-button"
+                >
+                  💭 Comment
+                </button>
+                <input
+                  type="checkbox"
+                  checked={isMealCompleted(meal.time)}
+                  onChange={() => toggleMealCompletion(meal.time)}
+                />
+              </div>
+            </div>
+            {mealComments[`${getDateKey(currentDate)}-${meal.time}`] && (
+              <div className="meal-comment">
+                📝 {mealComments[`${getDateKey(currentDate)}-${meal.time}`]}
+              </div>
+            )}
+            <div className="meal-items">
+              {meal.items.map((item, itemIndex) => (
+                <div key={itemIndex} className="meal-item-detail">
+                  {item.name} - {item.portion} ({item.calories} cal)
+                </div>
+              ))}
+            </div>
+          </div>
         ))}
       </div>
-
-      {mealPlanData[selectedDay] && (
-        <div>
-          <h2>{mealPlanData[selectedDay].type}</h2>
-          <div style={{ marginBottom: '20px' }}>
-            {mealPlanData[selectedDay].goals.map((goal, index) => (
-              <span
-                key={index}
-                style={{
-                  display: 'inline-block',
-                  padding: '5px 10px',
-                  margin: '5px',
-                  backgroundColor: '#f0f0f0',
-                  borderRadius: '15px'
-                }}
-              >
-                {goal}
-              </span>
-            ))}
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <div><strong>Total Carbs:</strong> {mealPlanData[selectedDay].totalCarbs}</div>
-            <div><strong>Total Calories:</strong> {mealPlanData[selectedDay].totalCalories}</div>
-            <div><strong>Liver Intake:</strong> {mealPlanData[selectedDay].liver}</div>
-          </div>
-
-          {mealPlanData[selectedDay].meals.map((meal, index) => (
-            <div
-              key={index}
-              style={{
-                border: '1px solid #ccc',
-                borderRadius: '8px',
-                padding: '15px',
-                marginBottom: '15px'
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ margin: 0 }}>{meal.time}</h3>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={isMealCompleted(meal.time)}
-                    onChange={() => toggleMealCompletion(meal.time)}
-                  />
-                  Complete
-                </label>
-              </div>
-              <table style={{ width: '100%', marginTop: '10px' }}>
-                <thead>
-                  <tr>
-                    <th style={{ textAlign: 'left' }}>Food</th>
-                    <th style={{ textAlign: 'left' }}>Portion</th>
-                    <th style={{ textAlign: 'right' }}>Calories</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {meal.items.map((item, itemIndex) => (
-                    <tr key={itemIndex}>
-                      <td>{item.name}</td>
-                      <td>{item.portion}</td>
-                      <td style={{ textAlign: 'right' }}>{item.calories} kcal</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ))}
-        </div>
-      )}
+      
+      <CommentModal />
     </div>
   );
 };
